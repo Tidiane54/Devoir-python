@@ -6,7 +6,10 @@ import seaborn as sns
 st.title("Exploration des Données avec Streamlit")
 
 # Charger le fichier CSV (dataset existant)
-df = pd.read_csv('data/Test.csv')  # Assurez-vous que 'Test.csv' est dans le même dossier que ce script
+df = pd.read_csv('data/Mall_Customers.csv')  # Assurez-vous que 'Test.csv' est dans le même dossier que ce script
+
+# Supprimez les espaces autour des noms des colonnes
+df.columns = df.columns.str.strip()
 
 # Afficher un message d'accueil
 st.write("**Dataset chargé avec succès !**")
@@ -44,83 +47,57 @@ df.columns = df.columns.str.strip()
 # Ajouter des filtres interactifs
 st.sidebar.header("Filtres interactifs")
 age_min, age_max = st.sidebar.slider("Sélectionner la plage d'âge", int(df['Age'].min()), int(df['Age'].max()), (int(df['Age'].min()), int(df['Age'].max())))
-income_min, income_max = st.sidebar.slider("Sélectionner la plage de Family_Size", int(df['Family_Size '].min()), int(df['Family_Size'].max()), (int(df['Annual Income (k$)'].min()), int(df['Annual Income (k$)'].max())))
+income_min, income_max = st.sidebar.slider(
+    "Sélectionner la plage de Annual Income (k$)", 
+    int(df['Annual Income (k$)'].min()), 
+    int(df['Annual Income (k$)'].max()), 
+    (int(df['Annual Income (k$)'].min()), int(df['Annual Income (k$)'].max()))
+)
 gender_filter = st.sidebar.selectbox("Sélectionner le genre", options=['All', 'Male', 'Female'])
 
 # Appliquer les filtres aux données
 filtered_df = df[(df['Age'] >= age_min) & (df['Age'] <= age_max)]
-filtered_df = filtered_df[(filtered_df['Family_Size'] >= income_min) & (filtered_df['Family_Size'] <= income_max)]
+filtered_df = filtered_df[(filtered_df['Annual Income (k$)'] >= income_min) & (filtered_df['Annual Income (k$)'] <= income_max)]
 if gender_filter != 'All':
     filtered_df = filtered_df[filtered_df['Gender'] == gender_filter]
 
 # Afficher les données filtrées
 st.header("Données filtrées")
 st.dataframe(filtered_df)
-
-# 1. Histogramme de la distribution de l'Age
-st.header("Distribution de l'Age")
-plt.figure(figsize=(8, 4))
-sns.histplot(filtered_df['Age'], kde=True)
-st.pyplot()
-
-# 2. Histogramme de la distribution du Spending Score
-st.header("Distribution du Spending Score")
-plt.figure(figsize=(8, 4))
-sns.histplot(filtered_df['Spending_Score (1-100)'], kde=True)
-st.pyplot()
-
-# 3. Scatterplot pour la relation entre Annual Income et Spending Score
-st.header("Relation entre Family_Sizeet Spending Score")
-plt.figure(figsize=(8, 4))
-sns.scatterplot(data=filtered_df, x='Family_Size', y='Spending Score (1-100)', hue='Gender')
-st.pyplot()
-df.columns = df.columns.str.strip()
-
-# Ajouter des filtres interactifs
-st.sidebar.header("Filtres interactifs")
-age_min, age_max = st.sidebar.slider("Sélectionner la plage d'âge", int(df['Age'].min()), int(df['Age'].max()), (int(df['Age'].min()), int(df['Age'].max())))
-family_size_min, family_size_max = st.sidebar.slider("Sélectionner la plage de Family_Size", int(df['Family_Size'].min()), int(df['Family_Size'].max()), (int(df['Family_Size'].min()), int(df['Family_Size'].max())))
-
-# Appliquer les filtres aux données
-filtered_df = df[(df['Age'] >= age_min) & (df['Age'] <= age_max)]
-filtered_df = filtered_df[(filtered_df['Family_Size'] >= family_size_min) & (filtered_df['Family_Size'] <= family_size_max)]
-
-# Afficher les données filtrées
-st.header("Données filtrées")
-st.dataframe(filtered_df)
-
 # Afficher les statistiques descriptives des données filtrées
 st.header("Statistiques descriptives des données filtrées")
 st.write(filtered_df.describe())
 
 # 1. Histogramme de la distribution de l'Age
 st.header("Distribution de l'Age")
-plt.figure(figsize=(8, 4))
-sns.histplot(filtered_df['Age'], kde=True)
-st.pyplot()
+fig, ax = plt.subplots(figsize=(8, 4))
+sns.histplot(filtered_df['Age'], kde=True, ax=ax)
+st.pyplot(fig)
 
 # 2. Histogramme de la distribution du Spending Score
 st.header("Distribution du Spending Score")
-plt.figure(figsize=(8, 4))
-sns.histplot(filtered_df['Spending_Score (1-100)'], kde=True)
-st.pyplot()
+fig, ax = plt.subplots(figsize=(8, 4))
+sns.histplot(filtered_df['Spending Score (1-100)'], kde=True, ax=ax)
+st.pyplot(fig)
 
-# 3. Scatterplot pour la relation entre Family_Size et Spending Score
-st.header("Relation entre Family_Size et Spending Score")
-plt.figure(figsize=(8, 4))
-sns.scatterplot(data=filtered_df, x='Family_Size', y='Spending_Score (1-100)', hue='Gender')
-st.pyplot()
+# 3. Scatterplot pour la relation entre Annual Income (k$) et Spending Score
+st.header("Relation entre Annual Income et Spending Score")
+fig, ax = plt.subplots(figsize=(8, 4))
+sns.scatterplot(data=filtered_df, x='Annual Income (k$)', y='Spending Score (1-100)', hue='Gender', ax=ax)
+st.pyplot(fig)
+df.columns = df.columns.str.strip()
+
 # 5. Résumé des résultats et conclusion
 st.header("Résumé des résultats")
 st.write("""
     - **Distribution de l'Age** : Les données montrent une distribution spécifique de l'âge, avec une concentration notable dans certaines plages d'âge.
     - **Spending Score** : La distribution du Spending Score est indiquée pour chaque groupe d'âge et de taille de famille.
-    - **Relation entre Family_Size et Spending Score** : La relation entre la taille de la famille et le Spending Score peut être explorée par un graphique interactif.
+    - **Relation entre Annual Income (k$) et Spending Score** : La relation entre la taille de la famille et le Spending Score peut être explorée par un graphique interactif.
     - **Filtres appliqués** : Les utilisateurs peuvent filtrer les données en fonction de l'âge et de la taille de la famille pour affiner l'analyse.
 """)
 
 # 6. Téléchargement des résultats sous forme de CSV
-@st.cache
+@st.cache_data
 def convert_df_to_csv(df):
     return df.to_csv(index=False).encode('utf-8')
 
